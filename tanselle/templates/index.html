@@ -38,13 +38,13 @@
   
               <div class="form_field_container" id="search_area">
                 <select class="form-control medium_field manage_search" id="search_field" name="search_field">
-                  <option value="Repository">Repository</option>
-                  <option value="City">City</option>
-                  <option value="State">State</option>
+                  <option value="Author">Author</option>
+                  <option value="Title">Title</option>
+                  <option value="Tags">Tags</option>
                 </select>
                 <input type="text" class="form-control manage_search medium_field" id="search_term"  name="search_term">
                 <button type="submit" name="search" value="search" class="btn btn-primary manage_search" id="search"><span class="fa fa-search" aria-hidden="true"></span> Search</button>
-                {% comment %} <button type="submit" name="reset" value="reset" class="btn btn-primary manage_search" id="reset"><span class="fa fa-search" aria-hidden="true"></span> Reset</button> {% endcomment %}
+                <button type="submit" name="reset" value="reset" class="btn btn-primary manage_search" id="reset"><span class="fa fa-search" aria-hidden="true"></span> Reset</button>
               </div>
   
             </div>
@@ -53,16 +53,16 @@
   
               <div class="form_field_container float-lg-right" id="new_button_area">
                 <div class="button_container">
-                  <button type="button" class="btn btn-primary manage_search" id="new" onclick="location.href='/edit_repository/0'"><span class="fal icon_spacer"></span> New Repository</button>
+                  <button type="button" class="btn btn-primary manage_search" id="new" onclick="location.href='/bibnew'"><span class="fal icon_spacer"></span> New Entry</button>
                   {% comment %} <button type="button" class="btn btn-primary manage_search" id="export" onclick="location.href='/Repositories/export_repositories'"><span class="fal icon_spacer"></span> Export</button> {% endcomment %}
                 </div>
-                <select class="form-control medium_field manage_search" id="status_filter" name="status_filter" onChange="this.form.submit();">
+                {% comment %} <select class="form-control medium_field manage_search" id="status_filter" name="status_filter" onChange="this.form.submit();">
                   <option value="All">All</option>
                   <option value="Unresearched">Unresearched</option>
                   <option value="Researched">Researched</option>
                   <option value="Duplicate">Duplicate</option>
                   <option value="Could Not Find Online">Could Not Find Online</option>
-                </select>
+                </select> {% endcomment %}
               </div>
   
             </div>
@@ -78,26 +78,27 @@
             <table class="table table-striped">
   
                   <tr class="table_header">
-                      <th class="string_sortable">Repository</th>
-                      <th class="string_sortable">City</th>
-                      <th class="string_sortable">State</th>
-                      <th class="string_sortable">Status</th>
+                      <th class="string_sortable">Author</th>
+                      <th class="string_sortable">Title</th>
+                      <th class="string_sortable">Tags</th>
+                      <th class="number_sortable">Year</th>
+                      <th></th>
                       <th></th>
                   </tr>
   
-              {% for data in repositories %}
+              {% for data in bibs %}
                 <tr> 
+                  <td>{{ data.author }}</td>
                   {% if data.url %}
-                    <td><a href='{{ data.url }}'" target="_blank"> {{ data.repository_name }}</a></td>
+                    <td><a href='{{ data.url }}' target="_blank"> {{ data.title }}</a></td>
                   {% else %}
-                    <td>{{ data.repository_name }}</td>
+                    <td>{{ data.title }}</td>
                   {% endif %}
   
-                  <td>{{ data.city }}</td>
-                  <td>{{ data.state }}</td>
-                  <td>{{ data.status }}</td>
-                  <td><a href='/edit_repository/{{ data.pk }}'"> Edit</a></td>
-                  <!-- <td><a href='/delete_repository/{{ data.pk }}'"> Delete</a></td> -->
+                  <td>{{ data.tags }}</td>
+                  <td>{{ data.year }}</td>
+                  <td><a href='/bibedit/{{ data.pk }}'"> Edit</a></td>
+                  <td><a href='/bibdelete/{{ data.pk }}'"> Delete</a></td>
                 </tr>
               {% endfor %}
   
@@ -112,6 +113,46 @@
 </body>
 
 <script>
+
+  $(document).ready(function() {
+    kwb = {};
+
+  });
+
+  function getCellValue(row, index) {
+
+    return $(row).children('td').eq(index).text()
+    
+  }
+
+  $('.string_sortable').click(function () {
+
+    var table = $(this).parents('table').eq(0)
+  
+    var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()))
+  
+    kwb.asc = !kwb.asc
+  
+    if (!kwb.asc) {
+        rows = rows.reverse()
+    }
+  
+    for (var i = 0; i < rows.length; i++) {
+        table.append(rows[i])
+    }
+  
+  })
+  
+  function comparer(index) {
+  
+    return function (a, b) {
+  
+        var valA = getCellValue(a, index), valB = getCellValue(b, index)
+  
+        return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.localeCompare(valB)
+  
+    }
+  }
 
 </script>
 

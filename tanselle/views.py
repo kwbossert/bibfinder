@@ -14,9 +14,9 @@ def home(request):
  
     # print(response.content)
 
-    return render(request, "index.html")
+#     return render(request, "index.html")
 
-def repositories(request):
+# def repositories(request):
 
     # Figure out if this is a search or a reset of the search
 
@@ -29,29 +29,33 @@ def repositories(request):
     else:
         searchTerm = request.GET.get('search_term', '')
         searchField = request.GET.get('search_field', '')
-        status = request.GET.get('status_filter', '')
+        # status = request.GET.get('status_filter', '')
 
     if not searchTerm and search:
-        if 'repository_search_field' in request.session:
-            searchField = request.session['repository_search_field']
+        if 'bib_search_field' in request.session:
+            searchField = request.session['bib_search_field']
 
-            if not request.session.get('repository_search_term', None):
-                request.session['repository_search_term'] = ""
-            searchTerm = request.session['repository_search_term']
+            if not request.session.get('bib_search_term', None):
+                request.session['bib_search_term'] = ""
+            searchTerm = request.session['bib_search_term']
 
-            if not request.session.get('repository_search_status', None):
-                request.session['repository_search_status'] = ""
+            # if not request.session.get('repository_search_status', None):
+            #     request.session['repository_search_status'] = ""
 
-            status = request.session['repository_search_status']
+            # status = request.session['repository_search_status']
     else:
-        request.session['repository_search_field'] = searchField
-        request.session['repository_search_term'] = searchTerm
-        request.session['repository_search_status'] = status
+        request.session['bib_search_field'] = searchField
+        request.session['bib_search_term'] = searchTerm
+        # request.session['repository_search_status'] = status
 
-    # Get the set of repositories to show the user based on role and assignments
+    # Get the set of citations to show the user based on role and assignments
 
-    repositories = Repository.GetRepositories(searchField, searchTerm, status)
-    return render(request,'repositories.html',{"repositories":repositories})
+    bibs = Bib.GetBibResults(searchField, searchTerm)
+    return render(request,'index.html',{"bibs":bibs})
+
+def notes(request):
+
+    return render(request, "notes.html")
 
 def bibnew(request):
     context ={}
@@ -63,7 +67,7 @@ def bibnew(request):
 
         form.save()
 
-        return HttpResponseRedirect("/home")
+        return HttpResponseRedirect("/")
  
     # add form dictionary to context
     context["form"] = form
@@ -79,12 +83,12 @@ def bibedit(request, id):
         obj = get_object_or_404(Bib, id = id)
         form = BibForm(request.POST or None, instance = obj)
  
-    # save the data from the form and return to repositories page
+    # save the data from the form and return to home page
     if form.is_valid():
 
         form.save()
 
-        return HttpResponseRedirect("/home")
+        return HttpResponseRedirect("/")
  
     # add form dictionary to context
     context["form"] = form
@@ -92,11 +96,12 @@ def bibedit(request, id):
     return render(request, "bibedit.html", context)
 
 def delete_bib(request, id):
+
     context ={}
  
     # fetch the object related to passed id
-    obj = get_object_or_404(Repository, id = id)
+    obj = get_object_or_404(Bib, id = id)
 
     obj.delete()
 
-    return HttpResponseRedirect("/repositories")
+    return HttpResponseRedirect("/")
